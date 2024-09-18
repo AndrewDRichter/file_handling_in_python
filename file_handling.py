@@ -1,76 +1,62 @@
 import os
 from pathlib import Path
 
-def continue_input(func):
-    
-    def does_it(*args, **kwargs):
-        func(*args, **kwargs)
-        input("Continuar...")
-    
-    return does_it
-
-@continue_input
-def empty_file(filepath:str="") -> bool:
-    print(Path(__file__).parent)
-
-@continue_input
-def file_exists():
-    try:
-        existe = Path(__file__).parent.joinpath("files").exists()
-        
-    except Exception as e:
-        print(e)
-
-@continue_input
-def cadastra_usuario():
-    try:
-        user_name = str(input("Nombre de usuario: "))
-        user_password = str(input("Contraseña de usuario: "))
-
-        with open("datos.txt", "r") as f:
-            empty = len(f.read()) == 0
-            f.close()
-        
-        if empty:
-            print("vazio")
-
-        with open(str(Path(__file__).parent) + r"\files\datos.txt", "w") as f:
-            f.write(user_name)
-            f.write(", ")
-            f.write(user_password)
-            f.close()
-        
-        # input("Continuar...")
-    except Exception as e:
-        print(f"Exception: {e}")
-        # input("Continuar")
-
-@continue_input
-def visualiza_usuarios():
-    try:
-        with open("datos.txt", "r") as f:
-            print(len(f.read()))
-            # input("Continuar...")
-    except Exception as e:
-        print(e)
-
-def menu():
+def clear_terminal():
     os.system("cls")
-    print('''
-          1- Cadastrar
-          2- Visualizar
-            ''')
-    return input("O quê deseja fazer: ")
-    
-while True:
-    r = menu()
-    # empty_file()
-    file_exists()
-    match r:
-        case '1':
-            cadastra_usuario()
-        case '2':
-            visualiza_usuarios()
-        case _:
-            print("Não existe essa opção!")
-            input("Continuar...")
+
+def file_is_empty(filepath) -> bool:
+    with open(filepath, "r") as file:
+        return False if len(file.read()) > 0 else True
+
+def file_exists(path):
+    return Path(__file__).parent.joinpath("files").exists()
+
+def handle_exceptions(func):
+    def exception_handler(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"Error handler: {e}")
+    return exception_handler
+
+# criação de arquivo
+@handle_exceptions
+def create_file(path):
+    # try:
+    #     os.mkdir(path)
+    #     print(f"Created directory at >> {path}")
+    # except Exception as e:
+    #     print(f"CREATE_FILE Error: {e}")
+    os.mkdir(path)
+    print(f"Created directory at >> {path}")
+
+
+# leitura de arquivo
+@handle_exceptions
+def read_file(path):
+    with open(path, "r") as file:
+        print(file.read())
+        file.close()
+
+
+# escrita e sobrescrita de arquivo
+@handle_exceptions
+def write_file(path, message, override: bool = False):
+    # eval('with open(path, "w") as file: file.write("banana")') if override else eval('with open(path, "a") as file: file.append("abacaxi")')
+    if override:
+        mode = "w"
+    else:
+        mode = "a"
+    with open(path, mode) as file:
+        file.write(message)
+        file.close()
+
+def testando():
+    file_path = Path(__file__).parent.joinpath(r"files\data.txt")
+    create_file(Path(__file__).parent.joinpath(r"files\data\blabla.txt"))
+    input()
+    empty = True if file_is_empty(file_path) else False
+    write_file(file_path, "olá", True)
+
+if __name__ == "__main__":
+    testando()
